@@ -1,0 +1,4 @@
+metadata:
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
