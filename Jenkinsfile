@@ -26,17 +26,17 @@ node {
         archiveArtifacts artifacts: '**/target/*.jar', followSymlinks: false
     }
     
-    stage('docker build') {
+    stage("docker build") {
         sh 'docker build -t iti-java:${BUILD_NUMBER} .'
     }
     
     stage("push java app image") {
-        // Option 1: Use shared library methods (correct syntax)
+        // Correct way to call shared library methods
         def docker = new com.iti.docker()
-        docker.login "${DOCKER_USER}", "${DOCKER_PASS}"  // No parentheses
-        docker.push "iti-java", "${BUILD_NUMBER}"       // No parentheses
+        docker.login DOCKER_USER, DOCKER_PASS  // No parentheses or quotes
+        docker.push "iti-java", BUILD_NUMBER   // No parentheses around parameters
         
-        // Option 2: Or use direct docker commands
+        // Alternative direct docker commands (if shared library still fails)
         // sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
         // sh "docker push iti-java:${BUILD_NUMBER}"
     }
