@@ -28,7 +28,7 @@ node {
         archiveArtifacts artifacts: '**/*.jar', followSymlinks: false
     }
     stage("docker build") {
-        sh 'podman build -t iti-java:${BUILD_NUMBER} .'
+        sh 'podman build -t iti-java:${BUILD_NUMBER} --pull=newer .'
     }
     stage("push java app image"){
         def docker = new com.iti.docker()
