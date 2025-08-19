@@ -36,6 +36,27 @@ pipeline {
           docker logout || true
         """
       }
+  
+    }
+    stage('Update ArgoCD') {
+      steps {
+        // Checkout repo using Jenkins credentials
+        git branch: 'main',
+            credentialsId: 'github-credentials',
+            url: 'git@github.com:batoullmahmoud/argocd.git'
+ 
+        // Now run shell commands
+        sh """
+            git config user.name "batoullmahmoud"
+            git config user.email "batoulmahmoudhassan@gmail.com"
+            pwd
+            ls
+            sed -i "s|image: .*|image: ${IMAGE_REPO}:${IMAGE_TAG}|" deployment.yaml
+            git add .
+            git commit -m "update image" || true
+            git push origin main
+        """
+      }
     }
   }
 }
