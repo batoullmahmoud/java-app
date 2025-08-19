@@ -1,56 +1,51 @@
 pipeline {
-  agent any
+    agent any
 
-  tools { 
-    maven 'mvn-01'
-  }
-
-  environment {
-    DOCKER_USER = credentials('docker-username')
-    DOCKER_PASS = credentials('docker-password')
-    IMAGE_REPO  = 'batoullmahmoud/app-java'
-    IMAGE_TAG   = "v${BUILD_NUMBER}"
-  }
-
-  stages {
-    stage('Checkout') { 
-      steps { 
-        git branch: 'main', url: 'git@github.com:Hassan-Eid-Hassan/java.git'
-      } 
+    environment {
+        DOCKER_USER = credentials('docker-username')   // Jenkins credentials ID for DockerHub username
+        DOCKER_PASS = credentials('docker-password')   // Jenkins credentials ID for DockerHub password
+        GIT_CRED    = credentials('github-credentials') // Jenkins credentials ID for GitHub username+token
     }
 
-    stage('Build & Test') { 
-      steps { 
-        sh 'mvn -B clean package' 
-      } 
-    }
-
-    stage('Docker build & push') {
-      steps {
-        sh """
-          docker build -t ${IMAGE_REPO}:${IMAGE_TAG} .
-          echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
-          docker push ${IMAGE_REPO}:${IMAGE_TAG}
-          docker logout || true
-        """
-      }
-    }
-
-    stage('Push to GitHub') {
-      steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'github-ssh', 
-                                           keyFileVariable: 'SSH_KEY')]) {
-          sh '''
-            # Configure Git
-            git config --global user.name "Jenkins CI"
-            git config --global user.email "jenkins@example.com"
-
-            # Push using SSH key
-            GIT_SSH_COMMAND="ssh -i $SSH_KEY -o StrictHostKeyChecking=no" \
-            git push origin main
-          '''
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'master',
+                    url: 'https://github.com/batoullmahmoud/java-app.git',
+                    credentialsId: 'github-credentials'
+            }
         }
-      }
+
+        stage('Build & Test') {
+            steps {
+                sh 'mvn clean test'
+            }
+        }
+
+        stage('Docker build & push') {
+            steps {
+                script {
+                    sh """
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker build -t $DOCKER_USER/java-app:latest .
+                        docker push $DOCKER_USER/java-app:latest
+                    """
+                }
+            }
+        }
+
+        stage('Push to GitHub') {
+            steps {
+                script {
+                    sh """
+                        git config user.email "jenkins@example.com"
+                        git config user.name "Jenkins"
+                        git add .
+                        git commit -m "CI: Update build artifacts" || echo "No changes to commit"
+                        git push https://${GIT_CRED_USR}:${GIT_CRED_PSW}@github.com/batoullmahmoud/java-app.git HEAD:main
+                    """
+                }
+            }
+        }
     }
-  }
 }
