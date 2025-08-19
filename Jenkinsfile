@@ -9,7 +9,7 @@ pipeline {
   environment {
     DOCKER_USER = credentials('docker-username')
     DOCKER_PASS = credentials('docker-password')
-    IMAGE_REPO  = 'batoullmahmoud/app-java'
+    IMAGE_REPO  = 'batoullmahmoud/java-app'
     IMAGE_TAG   = "v${env.BUILD_NUMBER}"
   }
  
