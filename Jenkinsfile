@@ -1,5 +1,3 @@
-@Library('iti-sharedlib')_
-
 properties([
     disableConcurrentBuilds()
 ])
