@@ -28,9 +28,6 @@ pipeline {
  
     stage('Docker build & push') {
       steps {
-        sh '''
-          docker login -u $DOCKER_USER -p $DOCKER_PASS
-        '''
 
         sh """
           docker build -t ${IMAGE_REPO}:${IMAGE_TAG} .
