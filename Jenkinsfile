@@ -4,6 +4,10 @@ properties([
     disableConcurrentBuilds()
 ])
 
+tools { 
+    maven 'mvn-01'
+    git 'git-01'
+  }
 node {
     def javaHome = tool name: 'java-11', type: 'jdk'
     def mavenHome = tool name: 'mvn-3-5-4', type: 'maven'
