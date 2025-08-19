@@ -33,19 +33,5 @@ pipeline {
                 }
             }
         }
-
-        stage('Push to GitHub') {
-            steps {
-                script {
-                    sh """
-                        git config user.email "jenkins@example.com"
-                        git config user.name "Jenkins"
-                        git add .
-                        git commit -m "CI: Update build artifacts" || echo "No changes to commit"
-                        git push https://${GIT_CRED_USR}:${GIT_CRED_PSW}@github.com/batoullmahmoud/java-app.git HEAD:main
-                    """
-                }
-            }
-        }
     }
 }
