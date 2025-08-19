@@ -1,37 +1,40 @@
 pipeline {
-    agent any
-
-    environment {
-        DOCKER_USER = credentials('docker-username')   // Jenkins credentials ID for DockerHub username
-        DOCKER_PASS = credentials('docker-password')   // Jenkins credentials ID for DockerHub password
-        GIT_CRED    = credentials('github-credentials') // Jenkins credentials ID for GitHub username+token
+  agent any
+ 
+  tools { 
+    maven 'mvn-01'
+    git 'git-01'
+  }
+ 
+  environment {
+    DOCKER_USER = credentials('docker-username')
+    DOCKER_PASS = credentials('docker-password')
+    IMAGE_REPO  = 'batoullmahmoud/app-java'
+    IMAGE_TAG   = "v${env.BUILD_NUMBER}"
+  }
+ 
+  stages {
+    stage('Checkout') { 
+      steps { 
+        git 'https://github.com/Hassan-Eid-Hassan/java.git' 
+      } 
     }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'master',
-                    url: 'https://github.com/batoullmahmoud/java-app.git',
-                    credentialsId: 'github-credentials'
-            }
-        }
-
-        stage('Build & Test') {
-            steps {
-                sh 'mvn clean test'
-            }
-        }
-
-        stage('Docker build & push') {
-            steps {
-                script {
-                    sh """
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker build -t $DOCKER_USER/java-app:latest .
-                        docker push $DOCKER_USER/java-app:latest
-                    """
-                }
-            }
-        }
+ 
+    stage('Build & Test') { 
+      steps { 
+        sh 'mvn -B clean package' 
+      } 
     }
+ 
+    stage('Docker build & push') {
+      steps {
+        sh """
+          docker build -t ${IMAGE_REPO}:${IMAGE_TAG} .
+          echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+          docker push ${IMAGE_REPO}:${IMAGE_TAG}
+          docker logout || true
+        """
+      }
+    }
+  }
 }
